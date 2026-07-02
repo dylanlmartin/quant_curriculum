@@ -1,0 +1,746 @@
+<!-- Alpha Lifecycle Infrastructure — Self-Study Curriculum Tracker
+     Single-file, dependency-free. Progress is stored in the browser (localStorage).
+     Deploy anywhere static (e.g. GitHub Pages). -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Alpha Lifecycle Infrastructure — Curriculum Tracker</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161a22; --panel2:#1c212c; --panel3:#232a37;
+    --border:#2a3140; --border2:#39435a;
+    --text:#e7ebf3; --muted:#9aa6b8; --faint:#6b7788;
+    --accent:#5b8cff; --accent2:#38bdf8; --green:#34d399; --amber:#f5b74e;
+    --p1:#5b8cff; --p2:#38bdf8; --p3:#a78bfa; --p4:#34d399;
+    --radius:14px; --shadow:0 1px 0 rgba(255,255,255,.03), 0 8px 24px rgba(0,0,0,.35);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);
+    line-height:1.5;-webkit-font-smoothing:antialiased;font-size:15px}
+  a{color:var(--accent2);text-decoration:none}
+  a:hover{text-decoration:underline}
+  button{font-family:inherit;cursor:pointer}
+
+  /* Layout */
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+  header.top{position:sticky;top:0;z-index:40;background:rgba(14,17,22,.86);
+    backdrop-filter:blur(10px);border-bottom:1px solid var(--border)}
+  .top-inner{display:flex;align-items:center;gap:18px;padding:12px 20px;max-width:1180px;margin:0 auto}
+  .brand{display:flex;flex-direction:column;min-width:0}
+  .brand h1{font-size:15px;margin:0;font-weight:650;letter-spacing:.2px}
+  .brand .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .top-spacer{flex:1}
+  .top-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+  .btn{background:var(--panel2);border:1px solid var(--border2);color:var(--text);
+    padding:7px 12px;border-radius:9px;font-size:13px;font-weight:550;transition:.15s;white-space:nowrap}
+  .btn:hover{background:var(--panel3);border-color:#4a5670}
+  .btn.ghost{background:transparent}
+  .btn.danger:hover{border-color:#7a3b3b;color:#ff9b9b}
+
+  /* Progress ring */
+  .ring-wrap{display:flex;align-items:center;gap:10px}
+  .ring{position:relative;width:46px;height:46px;flex:none}
+  .ring svg{transform:rotate(-90deg)}
+  .ring .pct{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    font-size:11px;font-weight:700}
+  .ring-label{font-size:12px;color:var(--muted);line-height:1.25}
+  .ring-label b{color:var(--text);font-size:13px;display:block}
+
+  /* Hero */
+  .hero{padding:34px 0 10px}
+  .hero .kicker{color:var(--accent);font-size:12px;font-weight:700;letter-spacing:1.4px;text-transform:uppercase}
+  .hero h2{font-size:30px;margin:8px 0 6px;letter-spacing:-.4px;font-weight:720}
+  .hero .lede{color:var(--muted);max-width:760px;font-size:15px}
+  .testline{margin:18px 0 6px;padding:14px 16px;background:linear-gradient(90deg,rgba(91,140,255,.10),rgba(56,189,248,.04));
+    border:1px solid var(--border);border-left:3px solid var(--accent);border-radius:10px;font-size:14px}
+  .testline b{color:var(--text)}
+
+  .meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 6px}
+  @media(max-width:760px){.meta-grid{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card.pad{padding:16px 18px}
+  .card h3.mini{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--faint)}
+  .alloc{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+  .alloc li{display:flex;gap:10px;font-size:13.5px;align-items:baseline}
+  .alloc .hrs{font-variant-numeric:tabular-nums;color:var(--accent2);font-weight:650;min-width:74px}
+
+  /* Phase nav */
+  .layout{display:grid;grid-template-columns:230px 1fr;gap:26px;align-items:start;margin:26px 0 60px}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}}
+  nav.phasenav{position:sticky;top:78px}
+  @media(max-width:900px){nav.phasenav{position:static;top:auto}}
+  .phasenav ul{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+  .phasenav a.pn{display:block;padding:9px 12px;border-radius:10px;border:1px solid transparent;
+    color:var(--muted);font-size:13.5px;transition:.15s}
+  .phasenav a.pn:hover{background:var(--panel);text-decoration:none;color:var(--text)}
+  .phasenav a.pn .pn-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+  .phasenav a.pn .pn-name{font-weight:600;color:var(--text)}
+  .phasenav a.pn .pn-months{font-size:11px;color:var(--faint)}
+  .phasenav .mini-bar{height:5px;border-radius:4px;background:var(--panel3);margin-top:7px;overflow:hidden}
+  .phasenav .mini-bar i{display:block;height:100%;border-radius:4px;background:var(--accent);transition:width .3s}
+
+  /* Phases */
+  section.phase{scroll-margin-top:80px;margin-bottom:34px}
+  .phase-head{border-radius:var(--radius);padding:20px 22px;border:1px solid var(--border);
+    background:var(--panel);position:relative;overflow:hidden}
+  .phase-head::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--pc,var(--accent))}
+  .phase-head .ph-kick{font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--pc,var(--accent))}
+  .phase-head h3{margin:6px 0 4px;font-size:22px;letter-spacing:-.3px}
+  .phase-head .ph-months{color:var(--muted);font-size:13px}
+  .phase-head .ph-summary{color:var(--muted);margin-top:10px;max-width:720px;font-size:14px}
+  .phase-head .ph-prog{display:flex;align-items:center;gap:12px;margin-top:14px}
+  .bar{flex:1;height:8px;border-radius:6px;background:var(--panel3);overflow:hidden;max-width:320px}
+  .bar i{display:block;height:100%;background:var(--pc,var(--accent));width:0;transition:width .3s}
+  .bar-txt{font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+
+  .group{margin-top:16px}
+  .group-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin:0 2px 10px}
+  .group-head h4{margin:0;font-size:15px;font-weight:650}
+  .group-head .note{font-size:12px;color:var(--faint);background:var(--panel2);border:1px solid var(--border);
+    padding:2px 8px;border-radius:20px}
+  .group-blurb{color:var(--muted);font-size:13.5px;margin:-4px 2px 12px}
+
+  /* Task row */
+  .task{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:9px;transition:.15s}
+  .task:hover{border-color:var(--border2)}
+  .task.done{background:linear-gradient(90deg,rgba(52,211,153,.06),transparent);border-color:rgba(52,211,153,.25)}
+  .task-main{display:flex;gap:12px;align-items:flex-start}
+  .cb{appearance:none;-webkit-appearance:none;flex:none;width:20px;height:20px;border-radius:6px;
+    border:1.5px solid var(--border2);background:var(--panel2);margin-top:2px;cursor:pointer;position:relative;transition:.15s}
+  .cb:hover{border-color:var(--accent)}
+  .cb:checked{background:var(--green);border-color:var(--green)}
+  .cb:checked::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;
+    border:solid #0e1116;border-width:0 2.5px 2.5px 0;transform:rotate(42deg)}
+  .task-body{flex:1;min-width:0}
+  .task-title{font-weight:600;font-size:14.5px}
+  .task.done .task-title{color:var(--muted)}
+  .task-detail{color:var(--muted);font-size:13px;margin-top:4px}
+  .task-detail ul{margin:6px 0 0;padding-left:18px}
+  .links{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .chip{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:4px 9px;border-radius:20px;
+    background:var(--panel2);border:1px solid var(--border);color:var(--accent2)}
+  .chip:hover{background:var(--panel3);text-decoration:none;border-color:var(--border2)}
+  .chip svg{width:11px;height:11px;opacity:.8}
+
+  /* Outputs */
+  .out-toggle{margin-top:10px}
+  .out-btn{font-size:12px;color:var(--muted);background:transparent;border:1px dashed var(--border2);
+    padding:4px 10px;border-radius:8px}
+  .out-btn:hover{color:var(--text);border-color:var(--accent)}
+  .out-btn .n{color:var(--accent2);font-weight:700}
+  .outputs{margin-top:10px;border-top:1px dashed var(--border);padding-top:10px;display:none}
+  .outputs.open{display:block}
+  .out-list{display:grid;gap:6px;margin-bottom:10px}
+  .out-item{display:flex;align-items:center;gap:9px;background:var(--panel2);border:1px solid var(--border);
+    border-radius:9px;padding:6px 9px;font-size:12.5px}
+  .out-item .ico{width:18px;height:18px;flex:none;display:flex;align-items:center;justify-content:center;
+    border-radius:5px;font-size:11px;font-weight:800}
+  .ico.gdoc{background:#1a73e81f;color:#8ab4f8}
+  .ico.github{background:#ffffff14;color:#e7ebf3}
+  .ico.link{background:#38bdf81f;color:#7dd3fc}
+  .out-item a{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .out-item .rm{background:transparent;border:none;color:var(--faint);font-size:15px;padding:0 4px}
+  .out-item .rm:hover{color:#ff9b9b}
+  .out-form{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+  .out-form input[type=url]{flex:1;min-width:180px;background:var(--panel2);border:1px solid var(--border2);
+    color:var(--text);border-radius:8px;padding:7px 10px;font-size:12.5px;font-family:var(--mono)}
+  .out-form input[type=url]:focus{outline:none;border-color:var(--accent)}
+  .mini-btn{font-size:12px;padding:6px 10px;border-radius:8px;border:1px solid var(--border2);
+    background:var(--panel2);color:var(--text);font-weight:550}
+  .mini-btn:hover{background:var(--panel3)}
+  .mini-btn.gdoc{border-color:#2b4a7a;color:#8ab4f8}
+  .mini-btn.github{border-color:#3a4152}
+  .mini-btn.add{background:var(--accent);border-color:var(--accent);color:#06122e}
+  .mini-btn.add:hover{background:#6f9bff}
+  .out-hint{font-size:11.5px;color:var(--faint);margin-top:7px}
+
+  /* Deliverables */
+  .deliv{margin-top:20px}
+  .deliv-head{display:flex;align-items:center;gap:8px;margin:0 2px 10px}
+  .deliv-head h4{margin:0;font-size:14px;text-transform:uppercase;letter-spacing:.6px;color:var(--faint)}
+  .deliv .task{background:var(--panel2)}
+
+  /* Cut list + checkpoints */
+  .cut{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  @media(max-width:640px){.cut{grid-template-columns:1fr}}
+  .cut li{font-size:13.5px;color:var(--muted);padding-left:22px;position:relative}
+  .cut li::before{content:"✕";position:absolute;left:0;color:#e06d6d;font-size:12px;top:1px}
+  table.ckp{width:100%;border-collapse:collapse;margin-top:6px;font-size:13.5px}
+  table.ckp th,table.ckp td{text-align:left;padding:10px 12px;border-bottom:1px solid var(--border)}
+  table.ckp th{color:var(--faint);font-size:11px;text-transform:uppercase;letter-spacing:.6px;font-weight:600}
+  table.ckp td.mo{font-variant-numeric:tabular-nums;color:var(--accent2);font-weight:700;width:70px}
+  table.ckp tr.done td{color:var(--muted)}
+  table.ckp .ck-cell{width:34px}
+
+  footer{border-top:1px solid var(--border);padding:26px 0 60px;color:var(--faint);font-size:12.5px}
+  .toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(20px);opacity:0;
+    background:var(--panel3);border:1px solid var(--border2);color:var(--text);padding:10px 16px;
+    border-radius:10px;font-size:13px;z-index:60;transition:.25s;pointer-events:none;box-shadow:var(--shadow)}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .sec-title{font-size:18px;margin:0 0 4px;letter-spacing:-.2px}
+  .sec-sub{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+</style>
+
+<header class="top">
+  <div class="top-inner">
+    <div class="ring-wrap">
+      <div class="ring" title="Overall progress">
+        <svg width="46" height="46">
+          <circle cx="23" cy="23" r="19" fill="none" stroke="#232a37" stroke-width="5"></circle>
+          <circle id="ringFill" cx="23" cy="23" r="19" fill="none" stroke="#34d399" stroke-width="5"
+            stroke-linecap="round" stroke-dasharray="119.4" stroke-dashoffset="119.4"></circle>
+        </svg>
+        <div class="pct" id="ringPct">0%</div>
+      </div>
+      <div class="ring-label"><b id="progCount">0 / 0</b>tasks complete</div>
+    </div>
+    <div class="top-spacer"></div>
+    <div class="top-actions">
+      <button class="btn ghost" id="btnExport">Export</button>
+      <button class="btn ghost" id="btnImport">Import</button>
+      <button class="btn ghost danger" id="btnReset">Reset</button>
+      <input type="file" id="fileImport" accept="application/json" style="display:none" />
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="hero">
+    <div class="kicker">Self-Study Curriculum</div>
+    <h2>Alpha Lifecycle Infrastructure</h2>
+    <p class="lede" id="lede"></p>
+    <div class="testline">
+      <b>The one-line test for everything here:</b> Does this help me correctly reject a bad signal
+      or a bad system design? If not, cut it.
+    </div>
+    <div class="meta-grid">
+      <div class="card pad">
+        <h3 class="mini">Assumptions</h3>
+        <p style="margin:0;color:var(--muted);font-size:13.5px" id="assume"></p>
+      </div>
+      <div class="card pad">
+        <h3 class="mini">Weekly time allocation (steady state)</h3>
+        <ul class="alloc" id="alloc"></ul>
+      </div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <nav class="phasenav">
+      <ul id="phaseNav"></ul>
+    </nav>
+    <div id="phases"></div>
+  </div>
+
+  <section id="cut" class="phase">
+    <div class="card pad">
+      <h3 class="sec-title">Explicitly cut (resist the temptation)</h3>
+      <p class="sec-sub">The failure mode isn't insufficient depth — it's pretending to more depth than you have.
+        This curriculum builds evaluation judgment plus firsthand respect for the builders' craft.</p>
+      <ul class="cut" id="cutList"></ul>
+    </div>
+  </section>
+
+  <section id="checkpoints" class="phase">
+    <div class="card pad">
+      <h3 class="sec-title">Progress checkpoints</h3>
+      <p class="sec-sub">Milestone markers. Tick them as you hit each one.</p>
+      <table class="ckp">
+        <thead><tr><th class="ck-cell"></th><th class="mo">Month</th><th>Checkpoint</th></tr></thead>
+        <tbody id="ckpBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap" style="padding:0">
+      Progress is saved locally in this browser only. Use <b>Export</b> to back it up or move it to
+      another device, and <b>Import</b> to restore it. Nothing is uploaded anywhere.
+    </div>
+  </footer>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================ Curriculum data ============================ */
+const DATA = {
+  lede: "A 12-month, self-directed program to build evaluation judgment for quantitative signals and the research infrastructure behind them — from probability foundations through a hands-on backtest-evaluation capstone.",
+  assumptions: "~12-month full-time study window, 20–25 hrs/week. Adjust phase lengths proportionally if the window is shorter.",
+  allocation: [
+    ["8–10 hrs", "Primary track study (textbook + problem sets)"],
+    ["6–8 hrs", "Capstone build"],
+    ["3–4 hrs", "Design-doc review habit + papers"],
+    ["2–3 hrs", "Management / org reading"],
+  ],
+  phases: [
+    {
+      id:"phase1", color:"var(--p1)", kicker:"Phase 1", name:"Foundations", months:"Months 1–3",
+      summary:"Build the statistical spine of backtest evaluation and the systems vocabulary you'll need to judge research infrastructure.",
+      groups:[
+        { name:"Track A — Probability & Statistics", note:"primary · ~10 hrs/week",
+          blurb:"Do the problem sets. That is the course.",
+          items:[
+            { id:"p1a1", title:"Blitzstein & Hwang — Introduction to Probability",
+              detail:"Full coverage, Chs. 1–13, plus Harvard Stat 110 lectures and problem sets. Target ~1.5 chapters/week → done by end of Month 2.",
+              links:[["Free book","https://probabilitybook.net"],["Stat 110 course (lectures, psets, solutions)","https://projects.iq.harvard.edu/stat110"]] },
+            { id:"p1a2", title:"Wasserman — All of Statistics",
+              detail:"Part I & II (Chs. 1–12), Month 3. Skim what overlaps with Blitzstein; go deliberately deep on hypothesis-testing mechanics, p-value pathologies, and bootstrap/resampling — the statistical spine of backtest evaluation.",
+              links:[["Springer","https://link.springer.com/book/10.1007/978-0-387-21736-9"]] },
+            { id:"p1a_skip", title:"Skip / skim", plain:true,
+              detail:"Measure theory, Bayesian computation beyond basics, and causal-inference chapters." },
+          ]},
+        { name:"Track B — Engineering Management", note:"light · ~2–3 hrs/week",
+          items:[
+            { id:"p1b1", title:"Larson — An Elegant Puzzle",
+              detail:"Month 1. Focus: platform teams, team sizing, and managing teams whose customers are internal researchers.",
+              links:[["lethain.com/elegant-puzzle","https://lethain.com/elegant-puzzle/"]] },
+            { id:"p1b2", title:"Forsgren et al. — Accelerate",
+              detail:"Month 2. Extract the four key metrics (deployment frequency, lead time, change failure rate, MTTR) and the capability model — your evidence base for judging team health and arbitrating “we need six months to refactor” claims.",
+              links:[["IT Revolution","https://itrevolution.com/product/accelerate/"]] },
+            { id:"p1b3", title:"Kleppmann — Designing Data-Intensive Applications",
+              detail:"Start Month 2, ~1 chapter/week, runs into Phase 2. For every chapter, write one paragraph mapping the concept to a production system you've worked with or studied — that mapping exercise is the actual learning. Priority: Chs. 1–5 (foundations, storage, encoding), 7 (transactions), 10–11 (batch/stream), 12 (future of data systems).",
+              links:[["dataintensive.net","https://dataintensive.net"]] },
+          ]},
+        { name:"Standing habit — Design-doc reviews, 1/week", note:"starts Month 2 · continues throughout",
+          blurb:"Read one real architecture writeup per week. Before reading the conclusions, write down: what would I challenge? What breaks at 10x? Where's the single point of failure? What's the migration path? Keep a running log — one page per doc.",
+          items:[
+            { id:"p1h1", title:"Man Group — ArcticDB",
+              detail:"The best public example of quant-research-infrastructure reasoning.",
+              links:[["Site","https://arcticdb.io/"],["GitHub","https://github.com/man-group/ArcticDB"],["Docs","https://docs.arcticdb.io/"]] },
+            { id:"p1h2", title:"Uber — Michelangelo",
+              links:[["Blog","https://www.uber.com/blog/michelangelo-machine-learning-platform/"]] },
+            { id:"p1h3", title:"Airbnb — Chronon",
+              links:[["Core concepts","https://medium.com/airbnb-engineering/chronon-a-declarative-feature-engineering-framework-b7b8ce796e04"],["Open-source announcement","https://medium.com/airbnb-engineering/chronon-airbnbs-ml-feature-platform-is-now-open-source-d9c4dba859e8"],["Project page","https://airbnb.tech/opensource/chronon/"]] },
+            { id:"p1h4", title:"Feature-store landscape",
+              links:[["featurestore.org","https://www.featurestore.org/"],["Databricks explainer","https://www.databricks.com/blog/what-is-a-feature-store"]] },
+            { id:"p1h5", title:"Architecture Decision Record (ADR) examples",
+              links:[["joelparkerhenderson/architecture-decision-record","https://github.com/joelparkerhenderson/architecture-decision-record"]] },
+          ]},
+      ],
+      deliverables:[
+        { id:"p1d1", title:"Stat 110 problem sets complete" },
+        { id:"p1d2", title:"DDIA mapping notes (one paragraph per chapter)" },
+        { id:"p1d3", title:"Design-review log started (4+ entries)" },
+      ],
+    },
+    {
+      id:"phase2", color:"var(--p2)", kicker:"Phase 2", name:"Alpha Evaluation Core", months:"Months 3–6",
+      summary:"The highest-leverage phase. Evaluation credibility rests here: the framework, the vocabulary, and the literature of what makes a backtest trustworthy.",
+      groups:[
+        { name:"Track A — Signal & Backtest Evaluation", note:"primary · ~10 hrs/week",
+          items:[
+            { id:"p2a1", title:"Grinold & Kahn — Active Portfolio Management (2nd ed.)",
+              detail:"The framework text. Print/ebook only — no legitimate free version. Priority: Chs. 1–6 (fundamental law, IR, IC, breadth), 10–12 (forecasting, information analysis), 14–17 (portfolio construction, implementation, transaction costs), 19–20 (performance analysis). Months 3–4. This vocabulary — IR, IC, breadth, transfer coefficient — is the language of alpha-approval discussions." },
+            { id:"p2a2", title:"Paleologo — Advanced Portfolio Management",
+              detail:"Month 4. Fast read on factor risk models, sizing, and what PMs get wrong.",
+              links:[["Wiley","https://www.wiley.com/en-us/Advanced+Portfolio+Management%3A+A+Quant%27s+Guide+for+Fundamental+Investors-p-9781119789277"]] },
+            { id:"p2a3", title:"Paleologo — The Elements of Quantitative Investing",
+              detail:"Month 5. Deeper treatment; slow down on risk-model construction and alpha combination.",
+              links:[["Wiley","https://www.wiley.com/en-us/The+Elements+of+Quantitative+Investing-p-9781394265459"]] },
+            { id:"p2a4", title:"López de Prado — Advances in Financial Machine Learning",
+              detail:"Months 5–6. Priority: Chs. 7–9 (cross-validation, purging/embargo), 10–14 (backtesting, backtest statistics, strategy risk). Read critically — the book has known issues with overfitting to its own methods; also read Paleologo's and practitioners' critiques. Knowing where AFML is wrong is itself credibility.",
+              links:[["Wiley","https://www.wiley.com/en-us/Advances+in+Financial+Machine+Learning-p-9781119482086"]] },
+            { id:"p2a5", title:"Ruppert & Matteson — Statistics and Data Analysis for Financial Engineering",
+              detail:"Selective, Months 5–6. Priority: returns / time-series chapters, GARCH, factor models. Skip fixed income and copula depth.",
+              links:[["Springer","https://link.springer.com/book/10.1007/978-1-4939-2614-5"]] },
+          ]},
+        { name:"Core papers", note:"Months 4–6 · ~2/week · annotate each",
+          blurb:"One-page notes on each. This annotated library is a Phase 2 deliverable.",
+          items:[
+            { id:"p2p1", title:"Bailey & López de Prado — The Deflated Sharpe Ratio",
+              links:[["SSRN","https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2460551"]] },
+            { id:"p2p2", title:"Bailey, Borwein, López de Prado, Zhu — The Probability of Backtest Overfitting",
+              links:[["SSRN","https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2326253"]] },
+            { id:"p2p3", title:"Bailey, Borwein, López de Prado, Zhu — Pseudo-Mathematics and Financial Charlatanism",
+              detail:"Short, readable — good first entry point.",
+              links:[["SSRN","https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2308659"]] },
+            { id:"p2p4", title:"Bailey & López de Prado — The Sharpe Ratio Efficient Frontier",
+              links:[["SSRN","https://papers.ssrn.com/sol3/papers.cfm?abstract_id=1821643"]] },
+            { id:"p2p5", title:"Harvey, Liu & Zhu — …and the Cross-Section of Expected Returns",
+              links:[["SSRN","https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2249314"]] },
+            { id:"p2p6", title:"Harvey & Liu — Backtesting",
+              links:[["SSRN","https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2345489"]] },
+            { id:"p2p7", title:"Arnott, Harvey, Markowitz — A Backtesting Protocol in the Era of Machine Learning",
+              links:[["SSRN","https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3275654"],["Published PDF","https://people.duke.edu/~charvey/Research/Published_Papers/P138_A_backtesting_protocol.pdf"]] },
+            { id:"p2p8", title:"Almgren & Chriss — Optimal Execution of Portfolio Transactions",
+              detail:"Journal of Risk, 2001.",
+              links:[["PDF","https://www.smallake.kr/wp-content/uploads/2016/03/optliq.pdf"]] },
+            { id:"p2p9", title:"Frazzini, Israel, Moskowitz — Trading Costs",
+              links:[["SSRN","https://papers.ssrn.com/sol3/papers.cfm?abstract_id=3229719"],["Trading Costs of Asset Pricing Anomalies","https://papers.ssrn.com/sol3/papers.cfm?abstract_id=2294498"]] },
+            { id:"p2p10", title:"Novy-Marx & Velikov — A Taxonomy of Anomalies and Their Trading Costs",
+              links:[["Semantic Scholar","https://www.semanticscholar.org/paper/A-Taxonomy-of-Anomalies-and-Their-Trading-Costs-Novy-Marx-Velikov/e4e55002cc2adb8a902f76e070c4563ebe105d63"]] },
+          ]},
+        { name:"Track B — Research Platform Architecture", note:"~4–5 hrs/week",
+          blurb:"Finish DDIA (Month 4). Then build a written mental model (2–3 pages each) of the applied layer below.",
+          items:[
+            { id:"p2b1", title:"Point-in-time correctness",
+              detail:"Bitemporal data, avoiding lookahead in the data layer. Read ArcticDB's versioning design and survey the bitemporal-database literature.",
+              links:[["ArcticDB docs","https://docs.arcticdb.io/"]] },
+            { id:"p2b2", title:"Feature stores",
+              detail:"What problems they solve, what they cost.",
+              links:[["Michelangelo","https://www.uber.com/blog/michelangelo-machine-learning-platform/"],["Chronon","https://medium.com/airbnb-engineering/chronon-a-declarative-feature-engineering-framework-b7b8ce796e04"]] },
+            { id:"p2b3", title:"Backtest engine design",
+              detail:"Event-driven vs. vectorized — what each hides. Read the architecture docs and known criticisms of both.",
+              links:[["Zipline","https://github.com/quantopian/zipline"],["vectorbt","https://github.com/polakowo/vectorbt"]] },
+            { id:"p2b4", title:"Reproducibility & lineage",
+              detail:"Can any backtest be rerun bit-identically a year later? Data versioning, code/config pinning.",
+              links:[["DVC","https://dvc.org"],["lakeFS","https://lakefs.io"]] },
+            { id:"p2b5", title:"Sim-to-live reconciliation",
+              detail:"Slippage attribution, paper-vs-live divergence. Thinner public literature — Almgren-Chriss plus practitioner posts; flag as an area to learn in practice." },
+          ]},
+      ],
+      deliverables:[
+        { id:"p2d1", title:"Annotated paper library (one-page notes each)" },
+        { id:"p2d2", title:"Five architecture mental-model docs (point-in-time, feature store, backtest engine, reproducibility, sim-to-live)" },
+        { id:"p2d3", title:"Design-review log at 12+ entries" },
+      ],
+    },
+    {
+      id:"phase3", color:"var(--p3)", kicker:"Phase 3 · overlapping", name:"Capstone Build", months:"Months 4–10",
+      summary:"Personally feel every pain point engineers building these systems describe, and build the backtest-evaluation harness at the core of the discipline.",
+      guardrail:"Guardrail: public data only, paper trading only, nothing published, no capital deployed. Confirm compliance with any agreements you're bound by before starting.",
+      groups:[
+        { name:"Stage 1 — Deliberately naive build", note:"Months 4–5",
+          blurb:"Let it be ugly. Scale it until it breaks or becomes unbearable, and write down each breaking point — that's the pressure your future engineers will describe.",
+          items:[
+            { id:"p3s1", title:"Build the naive pipeline",
+              detail:"Earnings-call transcripts (public) → LLM feature extraction → signal construction → simple loop-based backtester. Flat files, no database, no framework." },
+            { id:"p3s1b", title:"Scale it until it breaks — log every breaking point",
+              detail:"More tickers, more history, more signals. Each breaking point is a lesson in the pressure your engineers will describe." },
+          ]},
+        { name:"Stage 2 — The refactor", note:"Months 6–7",
+          blurb:"Fix only what broke, driven by experienced necessity — not tutorial cargo-culting.",
+          items:[
+            { id:"p3s2", title:"Refactor what broke",
+              detail:"Introduce a point-in-time data layer, a feature-store pattern, and an event-driven or properly vectorized backtest engine — only where Stage 1 actually hurt." },
+            { id:"p3s2b", title:"Keep an ADR log",
+              detail:"Every architecture decision, alternatives considered, and why. Doubles as design-review practice from the author's side.",
+              links:[["ADR format examples","https://github.com/joelparkerhenderson/architecture-decision-record"]] },
+          ]},
+        { name:"Stage 3 — The evaluation harness", note:"Months 7–9",
+          blurb:"The deliverable that maps directly to the evaluation discipline.",
+          items:[
+            { id:"p3s3a", title:"Walk-forward validation with purging and embargo" },
+            { id:"p3s3b", title:"Deflated Sharpe ratio and PBO computation" },
+            { id:"p3s3c", title:"Transaction-cost model + capacity curve (PnL vs. AUM deployed)" },
+            { id:"p3s3d", title:"Turnover and signal-decay analysis" },
+            { id:"p3s3e", title:"Multiple-testing tracking: log every variant tried, haircut accordingly" },
+          ]},
+        { name:"Stage 4 — Red team yourself", note:"Months 9–10",
+          items:[
+            { id:"p3s4a", title:"Construct three overfit signals",
+              detail:"One each: in-sample mining, a lookahead leak, and survivorship bias." },
+            { id:"p3s4b", title:"Confirm the harness catches all three",
+              detail:"If it doesn't, fix the harness." },
+            { id:"p3s4c", title:"Write the “how to spot a fraudulent backtest” memo",
+              detail:"One page, in your own words. This memo is the distilled skill of alpha evaluation." },
+          ]},
+      ],
+      deliverables:[],
+    },
+    {
+      id:"phase4", color:"var(--p4)", kicker:"Phase 4", name:"Synthesis", months:"Months 10–12",
+      summary:"Turn the reading and the capstone into transferable judgment: mock reviews, a considered approval process, and an honest gap list.",
+      groups:[
+        { name:"Synthesis exercises",
+          items:[
+            { id:"p4a1", title:"Mock design reviews",
+              detail:"Take 3–4 of your logged design docs and your own capstone ADRs; write the review you'd give as the responsible decision-maker. Compare against outcomes." },
+            { id:"p4a2", title:"Approval-workflow design exercise",
+              detail:"Draft the alpha-approval process you'd want to run — stages, evidence required at each gate, kill criteria, escalation paths. Arriving with a considered strawman beats arriving blank." },
+            { id:"p4a3", title:"Gap list",
+              detail:"Write down what you still can't evaluate confidently. These become an early learning agenda and the questions to investigate further — asked from a position of demonstrated preparation, not ignorance." },
+            { id:"p4a4", title:"Reread Grinold & Kahn, Chs. 1–6",
+              detail:"It will read differently after the capstone." },
+          ]},
+      ],
+      deliverables:[],
+    },
+  ],
+  cut:[
+    "LeetCode / algorithm grinding",
+    "Professional-level coding, C++, systems programming",
+    "Low-latency / HFT infrastructure",
+    "Kubernetes-level infrastructure operations",
+    "Derivatives math, stochastic calculus",
+    "General ML breadth beyond what the capstone requires (skim ISLR only if a specific gap appears)",
+  ],
+  checkpoints:[
+    ["ckp2","2","Stat 110 problem sets done; Larson + Accelerate read; design-review habit running"],
+    ["ckp4","4","DDIA finished with mapping notes; Grinold & Kahn core chapters done; naive capstone breaking"],
+    ["ckp6","6","Paper library annotated; refactor underway with ADR log; Paleologo ×2 done"],
+    ["ckp9","9","Evaluation harness complete; AFML critical read done"],
+    ["ckp10","10","Red-team exercise passed; fraud-detection memo written"],
+    ["ckp12","12","Mock reviews + approval-workflow strawman + gap list complete"],
+  ],
+};
+
+/* ============================ State ============================ */
+const LS_KEY = "ali-curriculum-tracker-v1";
+let state = load();
+function load(){
+  try{ const raw = localStorage.getItem(LS_KEY); if(raw) return JSON.parse(raw); }catch(e){}
+  return { done:{}, outputs:{} };
+}
+function save(){ try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){} }
+
+/* Registry of every trackable id, so progress totals stay in sync with the data. */
+const allIds = [];
+function reg(id){ allIds.push(id); return id; }
+
+/* ============================ Helpers ============================ */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function el(html){ const t=document.createElement('template'); t.innerHTML=html.trim(); return t.content.firstElementChild; }
+function outType(url){
+  const u=(url||'').toLowerCase();
+  if(u.includes('docs.google.com')||u.includes('drive.google.com')) return 'gdoc';
+  if(u.includes('github.com')||u.includes('github.io')) return 'github';
+  return 'link';
+}
+function outLabel(t){ return t==='gdoc'?'D':t==='github'?'GH':'↗'; }
+function shortUrl(url){ try{ const u=new URL(url); return (u.hostname.replace(/^www\./,'') + u.pathname).replace(/\/$/,''); }catch(e){ return url; } }
+
+const linkIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M10 14a3.5 3.5 0 0 0 5 0l3-3a3.5 3.5 0 0 0-5-5l-1 1"/><path d="M14 10a3.5 3.5 0 0 0-5 0l-3 3a3.5 3.5 0 0 0 5 5l1-1"/></svg>';
+
+/* ============================ Render: outputs ============================ */
+function outputsHtml(id){
+  const list = state.outputs[id] || [];
+  const items = list.map((o,i)=>`
+    <div class="out-item">
+      <span class="ico ${o.type}">${outLabel(o.type)}</span>
+      <a href="${esc(o.url)}" target="_blank" rel="noopener" title="${esc(o.url)}">${esc(o.title||shortUrl(o.url))}</a>
+      <button class="rm" data-action="rm-out" data-id="${esc(id)}" data-i="${i}" title="Remove" aria-label="Remove">×</button>
+    </div>`).join('');
+  return `
+    <div class="out-list">${items || '<div class="out-hint">No outputs attached yet.</div>'}</div>
+    <div class="out-form">
+      <button class="mini-btn gdoc" data-action="new-gdoc" title="Opens a blank Google Doc in a new tab">＋ New Google Doc</button>
+      <button class="mini-btn github" data-action="new-github" title="Opens the new-repository page in a new tab">＋ New GitHub repo</button>
+      <input type="url" placeholder="…then paste the Doc or repo URL here" data-id="${esc(id)}" />
+      <button class="mini-btn add" data-action="add-out" data-id="${esc(id)}">Attach</button>
+    </div>
+    <div class="out-hint">Paste any link (Google Doc, GitHub repo, PDF, notebook). The type is detected automatically.</div>`;
+}
+function outToggleHtml(id){
+  const n = (state.outputs[id]||[]).length;
+  return `<button class="out-btn" data-action="toggle-out" data-id="${esc(id)}">
+    ${n ? `Outputs <span class="n">${n}</span>` : '＋ Attach output'}</button>`;
+}
+
+/* ============================ Render: task ============================ */
+function taskHtml(item){
+  const linksHtml = (item.links||[]).map(([label,url])=>
+    `<a class="chip" href="${esc(url)}" target="_blank" rel="noopener">${linkIcon}${esc(label)}</a>`).join('');
+  const detail = item.detail ? `<div class="task-detail">${esc(item.detail)}</div>` : '';
+  if(item.plain){
+    return `<div class="task"><div class="task-main" style="align-items:baseline">
+      <div class="task-body"><div class="task-title" style="color:var(--faint);font-size:12px;text-transform:uppercase;letter-spacing:.6px">${esc(item.title)}</div>${detail}</div>
+    </div></div>`;
+  }
+  reg(item.id);
+  const done = !!state.done[item.id];
+  return `<div class="task ${done?'done':''}" data-task="${esc(item.id)}">
+    <div class="task-main">
+      <input type="checkbox" class="cb" data-action="toggle-done" data-id="${esc(item.id)}" ${done?'checked':''} aria-label="Mark complete" />
+      <div class="task-body">
+        <div class="task-title">${esc(item.title)}</div>
+        ${detail}
+        ${linksHtml?`<div class="links">${linksHtml}</div>`:''}
+        <div class="out-toggle" data-outslot="${esc(item.id)}">${outToggleHtml(item.id)}</div>
+        <div class="outputs" data-outbox="${esc(item.id)}">${outputsHtml(item.id)}</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ============================ Render: phases ============================ */
+function render(){
+  document.getElementById('lede').textContent = DATA.lede;
+  document.getElementById('assume').textContent = DATA.assumptions;
+  document.getElementById('alloc').innerHTML = DATA.allocation.map(([h,t])=>
+    `<li><span class="hrs">${esc(h)}</span><span>${esc(t)}</span></li>`).join('');
+  document.getElementById('cutList').innerHTML = DATA.cut.map(c=>`<li>${esc(c)}</li>`).join('');
+
+  // checkpoints
+  document.getElementById('ckpBody').innerHTML = DATA.checkpoints.map(([id,mo,txt])=>{
+    reg(id); const done=!!state.done[id];
+    return `<tr class="${done?'done':''}" data-ckp="${id}">
+      <td class="ck-cell"><input type="checkbox" class="cb" data-action="toggle-done" data-id="${id}" ${done?'checked':''} aria-label="Milestone reached" /></td>
+      <td class="mo">${esc(mo)}</td><td>${esc(txt)}</td></tr>`;
+  }).join('');
+
+  const phasesEl = document.getElementById('phases');
+  phasesEl.innerHTML = DATA.phases.map(ph=>{
+    const groups = ph.groups.map(g=>{
+      const blurb = g.blurb?`<p class="group-blurb">${esc(g.blurb)}</p>`:'';
+      const note = g.note?`<span class="note">${esc(g.note)}</span>`:'';
+      const items = g.items.map(taskHtml).join('');
+      return `<div class="group">
+        <div class="group-head"><h4>${esc(g.name)}</h4>${note}</div>
+        ${blurb}${items}</div>`;
+    }).join('');
+    const guardrail = ph.guardrail?`<p class="ph-summary" style="color:var(--amber)">${esc(ph.guardrail)}</p>`:'';
+    const deliv = (ph.deliverables&&ph.deliverables.length)?`
+      <div class="deliv">
+        <div class="deliv-head"><h4>Phase deliverables</h4></div>
+        ${ph.deliverables.map(taskHtml).join('')}
+      </div>`:'';
+    return `<section class="phase" id="${ph.id}" style="--pc:${ph.color}">
+      <div class="phase-head">
+        <div class="ph-kick">${esc(ph.kicker)}</div>
+        <h3>${esc(ph.name)}</h3>
+        <div class="ph-months">${esc(ph.months)}</div>
+        <p class="ph-summary">${esc(ph.summary)}</p>
+        ${guardrail}
+        <div class="ph-prog">
+          <div class="bar"><i data-bar="${ph.id}"></i></div>
+          <span class="bar-txt" data-bartxt="${ph.id}"></span>
+        </div>
+      </div>
+      ${groups}${deliv}
+    </section>`;
+  }).join('');
+
+  // phase nav
+  document.getElementById('phaseNav').innerHTML = DATA.phases.map(ph=>
+    `<li><a class="pn" href="#${ph.id}" style="--pc:${ph.color}">
+      <span class="pn-top"><span class="pn-name">${esc(ph.name)}</span><span class="pn-months">${esc(ph.months.replace('Months ','M'))}</span></span>
+      <span class="mini-bar"><i data-nav="${ph.id}" style="background:${ph.color}"></i></span>
+    </a></li>`).join('') +
+    `<li><a class="pn" href="#cut"><span class="pn-top"><span class="pn-name">Explicitly cut</span></span></a></li>` +
+    `<li><a class="pn" href="#checkpoints"><span class="pn-top"><span class="pn-name">Checkpoints</span></span></a></li>`;
+
+  updateProgress();
+}
+
+/* ============================ Progress ============================ */
+function phaseIds(ph){
+  const ids=[];
+  ph.groups.forEach(g=>g.items.forEach(it=>{ if(!it.plain) ids.push(it.id); }));
+  (ph.deliverables||[]).forEach(d=>ids.push(d.id));
+  return ids;
+}
+function updateProgress(){
+  let doneTotal=0;
+  DATA.phases.forEach(ph=>{
+    const ids=phaseIds(ph);
+    const done=ids.filter(id=>state.done[id]).length;
+    doneTotal+=done;
+    const pct = ids.length? Math.round(done/ids.length*100):0;
+    const bar=document.querySelector(`[data-bar="${ph.id}"]`);
+    const txt=document.querySelector(`[data-bartxt="${ph.id}"]`);
+    const nav=document.querySelector(`[data-nav="${ph.id}"]`);
+    if(bar) bar.style.width=pct+'%';
+    if(nav) nav.style.width=pct+'%';
+    if(txt) txt.textContent=`${done}/${ids.length} · ${pct}%`;
+  });
+  // include checkpoints in the grand total
+  const ckpDone = DATA.checkpoints.filter(([id])=>state.done[id]).length;
+  const total = allIds.length;
+  const grandDone = allIds.filter(id=>state.done[id]).length;
+  const pct = total? Math.round(grandDone/total*100):0;
+  const C = 2*Math.PI*19;
+  const fill=document.getElementById('ringFill');
+  fill.style.strokeDasharray=C.toFixed(1);
+  fill.style.strokeDashoffset=(C*(1-pct/100)).toFixed(1);
+  document.getElementById('ringPct').textContent=pct+'%';
+  document.getElementById('progCount').textContent=`${grandDone} / ${total}`;
+}
+
+/* ============================ Events ============================ */
+document.addEventListener('click', e=>{
+  const t = e.target.closest('[data-action]');
+  if(!t) return;
+  const action = t.dataset.action;
+  const id = t.dataset.id;
+
+  if(action==='toggle-done'){
+    state.done[id] = t.checked;
+    if(!state.done[id]) delete state.done[id];
+    save();
+    const row=document.querySelector(`[data-task="${id}"]`);
+    if(row) row.classList.toggle('done', t.checked);
+    const ckp=document.querySelector(`[data-ckp="${id}"]`);
+    if(ckp) ckp.classList.toggle('done', t.checked);
+    updateProgress();
+  }
+  else if(action==='toggle-out'){
+    const box=document.querySelector(`[data-outbox="${id}"]`);
+    if(box) box.classList.toggle('open');
+  }
+  else if(action==='new-gdoc'){ window.open('https://docs.new','_blank','noopener'); toast('Blank Google Doc opened — paste its URL back here to attach.'); }
+  else if(action==='new-github'){ window.open('https://github.com/new','_blank','noopener'); toast('New-repo page opened — paste the repo URL back here to attach.'); }
+  else if(action==='add-out'){
+    const input=document.querySelector(`.outputs[data-outbox="${id}"] input[type=url]`);
+    addOutput(id, input && input.value);
+  }
+  else if(action==='rm-out'){
+    const i=parseInt(t.dataset.i,10);
+    (state.outputs[id]||[]).splice(i,1);
+    if(state.outputs[id] && !state.outputs[id].length) delete state.outputs[id];
+    save(); refreshOutputs(id);
+  }
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && e.target.matches('.outputs input[type=url]')){
+    e.preventDefault();
+    addOutput(e.target.dataset.id, e.target.value);
+  }
+});
+
+function addOutput(id, url){
+  url=(url||'').trim();
+  if(!url){ toast('Paste a URL first.'); return; }
+  if(!/^https?:\/\//i.test(url)) url='https://'+url;
+  state.outputs[id] = state.outputs[id] || [];
+  state.outputs[id].push({ type:outType(url), url, title:shortUrl(url) });
+  save(); refreshOutputs(id, true);
+  toast('Output attached.');
+}
+function refreshOutputs(id, keepOpen){
+  const box=document.querySelector(`[data-outbox="${id}"]`);
+  const slot=document.querySelector(`[data-outslot="${id}"]`);
+  if(box){ const wasOpen=box.classList.contains('open')||keepOpen; box.innerHTML=outputsHtml(id); box.classList.toggle('open', !!wasOpen); }
+  if(slot) slot.innerHTML=outToggleHtml(id);
+}
+
+/* ============================ Export / Import / Reset ============================ */
+document.getElementById('btnExport').onclick=()=>{
+  const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='curriculum-progress-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('Progress exported.');
+};
+document.getElementById('btnImport').onclick=()=>document.getElementById('fileImport').click();
+document.getElementById('fileImport').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+    const data=JSON.parse(r.result);
+    state={ done:data.done||{}, outputs:data.outputs||{} };
+    save(); render(); toast('Progress imported.');
+  }catch(err){ toast('Could not read that file.'); } };
+  r.readAsText(f); e.target.value='';
+};
+document.getElementById('btnReset').onclick=()=>{
+  if(confirm('Reset all progress and attached outputs? This only affects this browser.')){
+    state={done:{},outputs:{}}; save(); render(); toast('Progress reset.');
+  }
+};
+
+/* ============================ Toast ============================ */
+let toastTimer;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'), 2600);
+}
+
+render();
+</script>
