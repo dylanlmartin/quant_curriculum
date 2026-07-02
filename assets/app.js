@@ -9,17 +9,27 @@ const $ = (sel, el = document) => el.querySelector(sel);
 function loadState() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return { checked: {}, outputs: {} };
+    if (!raw) return { checked: {}, outputs: {}, updatedAt: 0 };
     const s = JSON.parse(raw);
-    return { checked: s.checked || {}, outputs: s.outputs || {} };
+    return { checked: s.checked || {}, outputs: s.outputs || {}, updatedAt: s.updatedAt || 0 };
   } catch (e) {
-    return { checked: {}, outputs: {} };
+    return { checked: {}, outputs: {}, updatedAt: 0 };
   }
 }
 let state = loadState();
 
-function saveState() {
+// Low-level persistence — writes exactly what it's given, no timestamp bump.
+function writeStorage() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
+// Called for every *local* change: stamps the change time, persists, and lets
+// the sync layer (if any) push it to the remote gist.
+let localChangeHook = null;
+function saveState() {
+  state.updatedAt = Date.now();
+  writeStorage();
+  if (localChangeHook) localChangeHook();
 }
 
 // ---------- Helpers ----------
@@ -352,5 +362,31 @@ $("#btn-reset").addEventListener("click", () => {
   }
 });
 
+// ---------- Public API (used by the optional sync layer) ----------
+window.Tracker = {
+  STORAGE_KEY,
+  get state() {
+    return state;
+  },
+  // Replace local state with a remote snapshot WITHOUT bumping updatedAt,
+  // then re-render. Used when a newer version is pulled from the sync gist.
+  adoptRemote(remote) {
+    state = {
+      checked: remote.checked || {},
+      outputs: remote.outputs || {},
+      updatedAt: remote.updatedAt || 0,
+    };
+    writeStorage();
+    render();
+  },
+  // Register a callback fired after every local change (for auto-push).
+  onLocalChange(cb) {
+    localChangeHook = cb;
+  },
+  flash,
+  render,
+};
+
 // ---------- Go ----------
 render();
+if (window.CurriculumSync) window.CurriculumSync.init();

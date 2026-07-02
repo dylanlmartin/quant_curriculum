@@ -44,13 +44,25 @@
 
   <div class="toolbar">
     <span class="msg" id="toolbar-msg"></span>
+    <button class="btn sync-btn" id="btn-sync">Sync</button>
     <button class="btn" id="btn-export">Export progress</button>
     <button class="btn" id="btn-import">Import</button>
     <input type="file" id="import-file" accept="application/json" hidden />
     <button class="btn" id="btn-reset">Reset</button>
   </div>
 
+  <div class="modal" id="sync-modal">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h3>Cross-device sync</h3>
+        <button class="modal-x" id="sync-close" aria-label="Close">✕</button>
+      </div>
+      <div id="sync-body"></div>
+    </div>
+  </div>
+
   <script src="assets/curriculum.js"></script>
+  <script src="assets/sync.js"></script>
   <script src="assets/app.js"></script>
 </body>
 </html>
