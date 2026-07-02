@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Alpha Lifecycle Curriculum — Tracker</title>
+  <link rel="stylesheet" href="assets/styles.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>" />
+</head>
+<body>
+  <header class="hero">
+    <div class="wrap">
+      <h1 id="hero-title">Alpha Lifecycle &amp; Research Infrastructure</h1>
+      <p class="sub" id="hero-sub"></p>
+      <div class="progress-hero">
+        <div class="ring" aria-hidden="true">
+          <svg width="96" height="96">
+            <circle cx="48" cy="48" r="42" fill="none" stroke="var(--bg-elev-2)" stroke-width="8" />
+            <circle id="ring-fg" cx="48" cy="48" r="42" fill="none" stroke="var(--accent)"
+                    stroke-width="8" stroke-linecap="round"
+                    stroke-dasharray="264" stroke-dashoffset="264" />
+          </svg>
+          <div class="pct" id="ring-pct">0%</div>
+        </div>
+        <div class="hero-stats">
+          <div class="stat"><div class="n"><span id="stat-done">0</span> / <span id="stat-total">0</span></div><div class="l">Items done</div></div>
+          <div class="stat"><div class="n" id="stat-outputs">0</div><div class="l">Outputs collected</div></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <nav class="jump" id="jump"></nav>
+
+    <div class="meta" id="meta"></div>
+
+    <div id="phases"></div>
+
+    <section class="checkpoints" id="checkpoints"></section>
+
+    <section class="cut" id="cut"></section>
+  </div>
+
+  <div class="toolbar">
+    <span class="msg" id="toolbar-msg"></span>
+    <button class="btn" id="btn-export">Export progress</button>
+    <button class="btn" id="btn-import">Import</button>
+    <input type="file" id="import-file" accept="application/json" hidden />
+    <button class="btn" id="btn-reset">Reset</button>
+  </div>
+
+  <script src="assets/curriculum.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
