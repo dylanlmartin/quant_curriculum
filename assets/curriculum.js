@@ -28,6 +28,7 @@ const CURRICULUM = {
       id: "p1",
       name: "Phase 1 — Foundations",
       months: "Months 1–3",
+      monthRange: [1, 3],
       blurb:
         "Build the statistical spine and the systems vocabulary everything later depends on.",
       sections: [
@@ -176,11 +177,13 @@ const CURRICULUM = {
               id: "p1-del-ddia",
               title: "DDIA mapping notes (one paragraph per chapter)",
               output: true,
+              counter: { key: "ddia-chapters", target: 12, unit: "chapters" },
             },
             {
               id: "p1-del-log",
               title: "Design-review log started (4+ entries)",
               output: true,
+              counter: { key: "design-reviews", target: 4, unit: "entries" },
             },
           ],
         },
@@ -191,6 +194,7 @@ const CURRICULUM = {
       id: "p2",
       name: "Phase 2 — Alpha Evaluation Core",
       months: "Months 3–6",
+      monthRange: [3, 6],
       blurb:
         "The highest-leverage phase. Everything converges on one skill: separating real signal from overfit noise.",
       sections: [
@@ -355,6 +359,7 @@ const CURRICULUM = {
               id: "p2-del-papers",
               title: "Annotated paper library (one-page notes each)",
               output: true,
+              counter: { key: "papers-annotated", target: 11, unit: "papers" },
             },
             {
               id: "p2-del-models",
@@ -366,6 +371,7 @@ const CURRICULUM = {
               id: "p2-del-log",
               title: "Design-review log at 12+ entries",
               output: true,
+              counter: { key: "design-reviews", target: 12, unit: "entries" },
             },
           ],
         },
@@ -376,6 +382,7 @@ const CURRICULUM = {
       id: "p3",
       name: "Phase 3 — Capstone Build",
       months: "Months 4–10 (overlapping)",
+      monthRange: [4, 10],
       blurb:
         "Feel every pain point a research team describes, and build the evaluation harness that is the core of the whole curriculum. Guardrail: public data only, paper trading only, nothing published, no capital deployed.",
       sections: [
@@ -426,6 +433,7 @@ const CURRICULUM = {
       id: "p4",
       name: "Phase 4 — Synthesis & Integration",
       months: "Months 10–12",
+      monthRange: [10, 12],
       blurb: "Turn the parts into judgment you can apply cold.",
       sections: [
         {

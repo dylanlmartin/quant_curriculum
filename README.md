@@ -7,9 +7,21 @@ outputs you produce along the way (Google Docs and GitHub repos).
 
 ## Features
 
-- **Progress tracking** — check off every item; an overall completion ring plus
-  per-phase progress bars update live. Progress is saved in your browser
-  (`localStorage`), so it persists across visits on the same device.
+- **Tri-state progress tracking** — each item cycles *not started → in progress
+  → done*, so multi-week readings show momentum instead of sitting unchecked
+  for a month. An overall completion ring plus per-phase progress bars update
+  live. Progress is saved in your browser (`localStorage`), so it persists
+  across visits on the same device.
+- **Pacing** — set your start date and the page computes which plan month you're
+  in, badges the phase(s) you should be working (`now`), and marks checkpoints
+  as behind you or up next. Ahead/behind is visible at a glance.
+- **Resume where you left off** — an "Up next" link in the header jumps straight
+  to your first unfinished item.
+- **Habit counters** — countable deliverables (design-review log entries, DDIA
+  chapter notes, annotated papers) have +/− counters with targets, so weekly
+  habits earn visible credit before the deliverable is done.
+- **Collapsible phases** — completed phases fold away automatically; any phase
+  can be collapsed from its header to keep focus on current work.
 - **All materials linked** — books, papers, course pages, and reference
   architectures are one click away from each item.
 - **Output collection** — every deliverable and capstone stage has an *Outputs*

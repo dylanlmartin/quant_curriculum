@@ -55,7 +55,13 @@
 
   function currentSnapshot() {
     const s = window.Tracker.state;
-    return { checked: s.checked, outputs: s.outputs, updatedAt: s.updatedAt || 0 };
+    return {
+      checked: s.checked,
+      outputs: s.outputs,
+      counters: s.counters || {},
+      startDate: s.startDate || null,
+      updatedAt: s.updatedAt || 0,
+    };
   }
 
   async function createGist() {
