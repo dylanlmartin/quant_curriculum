@@ -35,7 +35,7 @@ const CURRICULUM = {
         {
           id: "p1-a",
           name: "Track A — Probability & Statistics",
-          note: "Primary, ~10 hrs/week.",
+          note: "Primary track · ~10 hrs/week · Months 1–3. Work the books in order and mark the one you're in as in-progress; the problem sets are the point, not the reading.",
           items: [
             {
               id: "p1-a-blitzstein",
@@ -70,7 +70,7 @@ const CURRICULUM = {
         {
           id: "p1-b",
           name: "Track B — Engineering Management",
-          note: "Light, ~2–3 hrs/week.",
+          note: "Light track · ~2–3 hrs/week · Months 1–3. Read alongside Track A, one book at a time, in the order listed.",
           items: [
             {
               id: "p1-b-larson",
@@ -97,8 +97,8 @@ const CURRICULUM = {
         },
         {
           id: "p1-c",
-          name: "Standing habit — Design-doc reviews, 1/week",
-          note: "Starts Month 2, continues throughout.",
+          name: "Standing habit — Design-doc reviews",
+          note: "Habit · ~1 hr/week · starts Month 2, continues for the whole curriculum. Review one writeup per week using the method below, then log it — count each entry on the design-review counter in the phase deliverables.",
           items: [
             {
               id: "p1-c-method",
@@ -119,6 +119,8 @@ const CURRICULUM = {
             {
               id: "p1-c-michelangelo",
               title: "Uber Michelangelo",
+              html:
+                "The canonical end-to-end ML-platform writeup — how features, training, and serving fit together at scale.",
               links: [
                 {
                   label: "uber.com/blog",
@@ -129,6 +131,8 @@ const CURRICULUM = {
             {
               id: "p1-c-chronon",
               title: "Airbnb Chronon",
+              html:
+                "A declarative feature-engineering framework — the clearest public treatment of keeping offline training and online serving consistent.",
               links: [
                 {
                   label: "core concepts",
@@ -144,6 +148,8 @@ const CURRICULUM = {
             {
               id: "p1-c-featurestore",
               title: "Feature-store landscape",
+              html:
+                "Survey the space after the two case studies above — skim several company implementations and note the patterns they share.",
               links: [
                 { label: "featurestore.org", url: "https://www.featurestore.org/" },
                 {
@@ -155,6 +161,8 @@ const CURRICULUM = {
             {
               id: "p1-c-adr",
               title: "Architecture Decision Record (ADR) examples",
+              html:
+                "Format reference for the decision log you'll keep from the capstone refactor onward — skim a few real examples now so the format is familiar.",
               links: [
                 {
                   label: "joelparkerhenderson/architecture-decision-record",
@@ -167,6 +175,7 @@ const CURRICULUM = {
         {
           id: "p1-d",
           name: "Phase 1 deliverables",
+          note: "Due by end of Month 3. Check off each deliverable when finished and save where it lives (Google Doc or GitHub repo) in its Outputs panel.",
           items: [
             {
               id: "p1-del-stat110",
@@ -201,7 +210,7 @@ const CURRICULUM = {
         {
           id: "p2-a",
           name: "Track A — Signal & Backtest Evaluation",
-          note: "Primary, ~10 hrs/week.",
+          note: "Primary track · ~10 hrs/week · Months 3–6. Books in the order listed; the core papers run in parallel at ~2/week from Month 4.",
           items: [
             {
               id: "p2-a-gk",
@@ -300,7 +309,7 @@ const CURRICULUM = {
         {
           id: "p2-b",
           name: "Track B — Research Platform Architecture",
-          note: "~4–5 hrs/week. Finish DDIA (Month 4), then build written mental models (2–3 pages each).",
+          note: "Secondary track · ~4–5 hrs/week · Months 4–6. Finish DDIA first, then write one 2–3 page mental-model doc for each topic below; save the docs in the Phase 2 deliverables Outputs panel.",
           items: [
             {
               id: "p2-b-pit",
@@ -354,6 +363,7 @@ const CURRICULUM = {
         {
           id: "p2-d",
           name: "Phase 2 deliverables",
+          note: "Due by end of Month 6. Check off each deliverable when finished and save where it lives (Google Doc or GitHub repo) in its Outputs panel.",
           items: [
             {
               id: "p2-del-papers",
@@ -388,7 +398,8 @@ const CURRICULUM = {
       sections: [
         {
           id: "p3-s",
-          name: "Stages",
+          name: "Capstone stages",
+          note: "Build · ~6–8 hrs/week · Months 4–10, overlapping Phase 2. Work the stages strictly in order — each exists to create the pain the next one fixes. Each stage is a deliverable: save its repo and notes in its Outputs panel.",
           items: [
             {
               id: "p3-s1",
@@ -438,7 +449,8 @@ const CURRICULUM = {
       sections: [
         {
           id: "p4-s",
-          name: "Exercises",
+          name: "Synthesis exercises",
+          note: "Written exercises · Months 10–12. Any order, but save the Grinold & Kahn reread for last. Each written exercise is a deliverable: save it in its Outputs panel.",
           items: [
             {
               id: "p4-mock",
